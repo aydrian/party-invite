@@ -6,12 +6,20 @@ import {
 } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle
+} from "~/components/ui/card.tsx";
 import { prisma } from "~/utils/db.server.ts";
 import env from "~/utils/env.server.ts";
 
+import { RsvpForm } from "./resources+/rsvp.tsx";
+
 export async function loader({ request }: LoaderArgs) {
   const party = await prisma.party.findUnique({
-    select: { endDate: true, name: true, startDate: true },
+    select: { endDate: true, id: true, name: true, startDate: true },
     where: { id: env.PARTY_ID }
   });
 
@@ -34,17 +42,29 @@ export default function Index() {
   const endDate = new Date(party.endDate);
   return (
     <div>
-      <h1>You're invited to {party.name}</h1>
-      <h2>
-        {new Intl.DateTimeFormat(undefined, {
-          day: "numeric",
-          hour: "numeric",
-          minute: "numeric",
-          month: "short",
-          weekday: "short",
-          year: "numeric"
-        }).formatRange(startDate, endDate)}
-      </h2>
+      <header>
+        <h1>You're invited to {party.name}</h1>
+        <h2>
+          {new Intl.DateTimeFormat(undefined, {
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+            month: "short",
+            weekday: "short",
+            year: "numeric"
+          }).formatRange(startDate, endDate)}
+        </h2>
+      </header>
+      <main>
+        <Card>
+          <CardHeader>
+            <CardTitle>RSVP</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <RsvpForm partyId={party.id} />
+          </CardContent>
+        </Card>
+      </main>
     </div>
   );
 }
