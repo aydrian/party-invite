@@ -54,7 +54,7 @@ export function Field({
         id={id}
         {...inputProps}
       />
-      <div className="min-h-[32px] px-4 pb-3 pt-1">
+      <div className="min-h-[32px] px-4 py-1">
         {errorId ? <ErrorList errors={errors} id={errorId} /> : null}
       </div>
     </div>
@@ -84,7 +84,7 @@ export function TextareaField({
         id={id}
         {...textareaProps}
       />
-      <div className="min-h-[32px] px-4 pb-3 pt-1">
+      <div className="min-h-[32px] px-4 py-1">
         {errorId ? <ErrorList errors={errors} id={errorId} /> : null}
       </div>
     </div>
@@ -144,7 +144,7 @@ export function CheckboxField({
           className="text-body-xs self-center text-muted-foreground"
         />
       </div>
-      <div className="px-4 pb-3 pt-1">
+      <div className="px-4 py-1">
         {errorId ? <ErrorList errors={errors} id={errorId} /> : null}
       </div>
     </div>
@@ -167,16 +167,27 @@ export function RadioGroupField({
   options: { children: React.ReactNode; value: string }[];
 }) {
   const fallbackId = useId();
+  const shadowInputRef = useRef<HTMLInputElement>(null);
+  const control = useInputEvent({
+    ref: shadowInputRef
+  });
   const id = inputProps.id ?? inputProps.name ?? fallbackId;
   const errorId = errors?.length ? `${id}-error` : undefined;
 
   return (
     <div className={className}>
+      <input ref={shadowInputRef} {...inputProps} />
       <Label htmlFor={id} {...labelProps} />
       <RadioGroup
+        aria-describedby={errorId}
+        aria-invalid={errorId ? true : undefined}
         className={cn(layout === "horizontal" && "flex flex-row")}
         defaultValue={inputProps.defaultValue?.toString()}
-        id={id}
+        disabled={inputProps.disabled}
+        onBlur={control.blur}
+        onFocus={control.focus}
+        onValueChange={control.change}
+        required={inputProps.required}
       >
         {options.map(({ children, value }) => {
           const optionId = `${id}-radio-item-${value}`;
@@ -188,7 +199,7 @@ export function RadioGroupField({
           );
         })}
       </RadioGroup>
-      <div className="min-h-[32px] px-4 pb-3 pt-1">
+      <div className="min-h-[32px] px-4 py-1">
         {errorId ? <ErrorList errors={errors} id={errorId} /> : null}
       </div>
     </div>

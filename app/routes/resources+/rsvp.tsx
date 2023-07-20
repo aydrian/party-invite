@@ -11,12 +11,16 @@ import {
   SubmitButton,
   TextareaField
 } from "~/components/form.tsx";
+import { prisma } from "~/utils/db.server.ts";
 
 const RsvpFormSchema = z.object({
-  firstName: z.string().min(1, "First name is required."),
-  guests: z.string().default("1").pipe(z.coerce.number()),
-  lastName: z.string().min(1, "First name is required."),
+  guests: z
+    .string()
+    .default("1")
+    .pipe(z.coerce.number().min(1, "There should be at least 1 guest.")),
+  id: z.string().optional(),
   message: z.string().optional(),
+  name: z.string().min(1, "Please enter your name."),
   partyId: z.string(),
   response: z.nativeEnum(ResponseType)
 });
@@ -40,15 +44,37 @@ export async function action({ request }: ActionArgs) {
     return json({ status: "idle", submission } as const);
   }
 
+  console.log({ submission });
+  const { guests, message, name, partyId, response } = submission.value;
+  const rsvp = await prisma.rsvp.create({
+    data: {
+      guests,
+      message,
+      name,
+      partyId,
+      response
+    },
+    select: { id: true }
+  });
+
+  submission.value.id = rsvp.id;
   return json({ status: "success", submission } as const);
 }
 
-export function RsvpForm({ partyId }: { partyId: string }) {
+export function RsvpForm({
+  party
+}: {
+  party: { endDate: string; id: string; name: string; startDate: string };
+}) {
   const rsvpFetcher = useFetcher<typeof action>();
 
   const [form, fields] = useForm({
     constraint: getFieldsetConstraint(RsvpFormSchema),
-    defaultValue: { partyId, response: ResponseType.YES },
+    defaultValue: {
+      guests: "1",
+      partyId: party.id,
+      response: ResponseType.YES
+    },
     id: "rsvp-form",
     lastSubmission: rsvpFetcher.data?.submission,
     onValidate({ formData }) {
@@ -57,51 +83,69 @@ export function RsvpForm({ partyId }: { partyId: string }) {
     shouldRevalidate: "onBlur"
   });
 
+  if (rsvpFetcher.data?.status === "success") {
+    return <div>Thank you</div>;
+  }
+
   return (
-    <rsvpFetcher.Form action="/resources/rsvp" method="post" {...form.props}>
+    <rsvpFetcher.Form
+      action="/resources/rsvp"
+      className="flex flex-col"
+      method="post"
+      {...form.props}
+    >
       <input
         name={fields.partyId.name}
         type="hidden"
         value={fields.partyId.defaultValue}
       />
-      <Field
-        errors={fields.firstName.errors}
-        inputProps={conform.input(fields.firstName)}
-        labelProps={{ children: "First Name", htmlFor: fields.firstName.id }}
-      />
-      <Field
-        errors={fields.lastName.errors}
-        inputProps={conform.input(fields.lastName)}
-        labelProps={{ children: "Last Name", htmlFor: fields.lastName.id }}
-      />
       <RadioGroupField
+        inputProps={{
+          ...conform.input(fields.response, {
+            ariaAttributes: true,
+            hidden: true
+          })
+        }}
+        labelProps={{
+          children: "Are you coming?",
+          htmlFor: fields.response.id
+        }}
         options={[
           { children: "Yes", value: ResponseType.YES },
           { children: "Maybe", value: ResponseType.MAYBE }
         ]}
         errors={fields.response.errors}
-        inputProps={conform.input(fields.response, { type: "radio" })}
-        labelProps={{ children: "Response", htmlFor: fields.response.id }}
         layout="horizontal"
       />
       <Field
+        errors={fields.name.errors}
+        inputProps={conform.input(fields.name)}
+        labelProps={{ children: "What's your name?", htmlFor: fields.name.id }}
+      />
+      <Field
+        inputProps={{
+          ...conform.input(fields.guests),
+          inputMode: "numeric",
+          min: "1",
+          type: "number"
+        }}
         labelProps={{
-          children: "Guests (including yourself)",
+          children: "How many people are you bringing, including yourself?",
           htmlFor: fields.guests.id
         }}
         errors={fields.guests.errors}
-        inputProps={{ ...conform.input(fields.guests), type: "number" }}
       />
       <TextareaField
         labelProps={{
-          children: "Message",
+          children: "Leave a message for the wall?",
           htmlFor: fields.message.id
         }}
         errors={fields.message.errors}
         textareaProps={conform.textarea(fields.message)}
       />
       <SubmitButton
-        className="mt-2 w-full sm:w-auto"
+        className="w-full sm:w-auto"
+        size="sm"
         state={rsvpFetcher.state}
         submittingText="Submitting"
       >

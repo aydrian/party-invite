@@ -19,14 +19,44 @@ import { RsvpForm } from "./resources+/rsvp.tsx";
 
 export async function loader({ request }: LoaderArgs) {
   const party = await prisma.party.findUnique({
-    select: { endDate: true, id: true, name: true, startDate: true },
+    select: {
+      endDate: true,
+      host: { select: { firstName: true, phone: true } },
+      id: true,
+      location: {
+        select: {
+          address1: true,
+          city: true,
+          crossStreets: true,
+          instructions: true,
+          name: true,
+          state: true,
+          zip: true
+        }
+      },
+      name: true,
+      startDate: true
+    },
     where: { id: env.PARTY_ID }
   });
 
   if (!party) {
     throw new Response("Party not found. ☹️", { status: 404 });
   }
-  return json({ party });
+
+  const rsvpSums = await prisma.rsvp.groupBy({
+    _sum: { guests: true },
+    by: ["response"],
+    where: { partyId: party.id }
+  });
+
+  const rsvps = rsvpSums
+    .map(({ _sum: { guests }, response }) => ({
+      [response]: guests
+    }))
+    .reduce((acc, cur) => ({ ...acc, ...cur }), { MAYBE: 0, YES: 0 });
+
+  return json({ party, rsvps });
 }
 
 export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
@@ -37,12 +67,12 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
 };
 
 export default function Index() {
-  const { party } = useLoaderData<typeof loader>();
+  const { party, rsvps } = useLoaderData<typeof loader>();
   const startDate = new Date(party.startDate);
   const endDate = new Date(party.endDate);
   return (
     <div>
-      <header>
+      <header className="container">
         <h1>You're invited to {party.name}</h1>
         <h2>
           {new Intl.DateTimeFormat(undefined, {
@@ -54,14 +84,20 @@ export default function Index() {
             year: "numeric"
           }).formatRange(startDate, endDate)}
         </h2>
+        <dl>
+          <dt>Yeses</dt>
+          <dd>{rsvps["YES"]}</dd>
+          <dt>Maybes</dt>
+          <dd>{rsvps["MAYBE"]}</dd>
+        </dl>
       </header>
-      <main>
-        <Card>
+      <main className="container">
+        <Card className="mx-auto max-w-md">
           <CardHeader>
             <CardTitle>RSVP</CardTitle>
           </CardHeader>
           <CardContent>
-            <RsvpForm partyId={party.id} />
+            <RsvpForm party={party} />
           </CardContent>
         </Card>
       </main>
