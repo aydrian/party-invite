@@ -24,7 +24,9 @@ export default function Index() {
   return (
     <Card className="w-full max-w-md opacity-75 shadow-md md:min-w-[28rem]">
       <CardHeader>
-        <CardTitle>RSVP</CardTitle>
+        <CardTitle className="font-anton font-black italic leading-tight">
+          RSVP
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <RsvpForm partyId={partyId} />

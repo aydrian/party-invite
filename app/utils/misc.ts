@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 // https://javascript.plainenglish.io/a-better-way-to-format-phone-numbers-in-javascript-81ce04c2f3a3
 // formatPhoneNumber(12025550171, "+# (###) ###-####") => "+1 (202) 555-0171"
 export const formatPhoneNumber = (
-  n: number,
+  n: string,
   template: string,
   i = 0
 ): string => {

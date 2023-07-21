@@ -54,7 +54,7 @@ export function Field({
         id={id}
         {...inputProps}
       />
-      <div className="min-h-[32px] px-4 py-1">
+      <div className="px-4 py-1">
         {errorId ? <ErrorList errors={errors} id={errorId} /> : null}
       </div>
     </div>
@@ -84,7 +84,7 @@ export function TextareaField({
         id={id}
         {...textareaProps}
       />
-      <div className="min-h-[32px] px-4 py-1">
+      <div className="px-4 py-1">
         {errorId ? <ErrorList errors={errors} id={errorId} /> : null}
       </div>
     </div>
@@ -199,7 +199,7 @@ export function RadioGroupField({
           );
         })}
       </RadioGroup>
-      <div className="min-h-[32px] px-4 py-1">
+      <div className="px-4 py-1">
         {errorId ? <ErrorList errors={errors} id={errorId} /> : null}
       </div>
     </div>

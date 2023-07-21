@@ -25,6 +25,8 @@ export async function loader({ request }: DataFunctionArgs) {
 
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ href: cssBundleHref, rel: "stylesheet" }] : []),
+  { href: "/fonts/anton/font.css", rel: "stylesheet" },
+  { href: "/fonts/permanant-marker/font.css", rel: "stylesheet" },
   { href: styles, rel: "stylesheet" }
 ];
 
@@ -38,7 +40,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="min-h-screen w-screen bg-gradient-to-t from-orange-400 to-sky-400">
+      <body className="min-h-screen w-screen bg-gradient-to-t from-orange-400 to-sky-400 bg-fixed">
         <Outlet />
         <Confetti confetti={data.flash?.confetti} />
         <ScrollRestoration />

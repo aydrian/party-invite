@@ -57,6 +57,10 @@ export default {
           foreground: "hsl(var(--secondary-foreground))"
         }
       },
+      fontFamily: {
+        anton: ["'Anton'", "sans-serif"],
+        "permanant-marker": ["'Permanent Marker'", "sans-serif"]
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },

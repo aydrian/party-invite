@@ -1,8 +1,8 @@
 import { conform, useForm } from "@conform-to/react";
 import { getFieldsetConstraint, parse } from "@conform-to/zod";
 import { ResponseType } from "@prisma/client";
-import { type ActionArgs, json } from "@remix-run/node";
-import { useFetcher } from "@remix-run/react";
+import { type ActionArgs, json, redirect } from "@remix-run/node";
+import { Link, useFetcher } from "@remix-run/react";
 import { z } from "zod";
 
 import {
@@ -11,9 +11,19 @@ import {
   SubmitButton,
   TextareaField
 } from "~/components/form.tsx";
+import { Badge } from "~/components/ui/badge.tsx";
+import { Button } from "~/components/ui/button.tsx";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from "~/components/ui/card.tsx";
 import { rsvpCookie } from "~/utils/cookies.server.ts";
 import { prisma } from "~/utils/db.server.ts";
 import { redirectWithConfetti } from "~/utils/flash-session.server.ts";
+import { cn, formatPhoneNumber } from "~/utils/misc.ts";
 
 const RsvpFormSchema = z.object({
   guests: z
@@ -47,25 +57,34 @@ export async function action({ request }: ActionArgs) {
   }
 
   let { guests, id, message, name, partyId, response } = submission.value;
+  id = id ? id : undefined;
   message = message ? message : undefined;
 
-  const rsvp = await prisma.rsvp.upsert({
-    create: {
+  if (id) {
+    const rsvp = await prisma.rsvp.update({
+      data: {
+        guests,
+        message,
+        name,
+        partyId,
+        response
+      },
+      select: { id: true },
+      where: { id }
+    });
+
+    return redirect(`/r/${rsvp.id}`);
+  }
+
+  const rsvp = await prisma.rsvp.create({
+    data: {
       guests,
       message,
       name,
       partyId,
       response
     },
-    select: { id: true },
-    update: {
-      guests,
-      message,
-      name,
-      partyId,
-      response
-    },
-    where: { id }
+    select: { id: true }
   });
 
   return redirectWithConfetti(`/r/${rsvp.id}`, {
@@ -168,14 +187,21 @@ export function RsvpForm({
         errors={fields.message.errors}
         textareaProps={conform.textarea(fields.message)}
       />
-      <SubmitButton
-        className="w-full sm:w-auto"
-        size="sm"
-        state={rsvpFetcher.state}
-        submittingText="Submitting"
-      >
-        Submit
-      </SubmitButton>
+      <div className="flex w-full items-center justify-between gap-4">
+        <SubmitButton
+          className="w-full sm:w-auto"
+          size="sm"
+          state={rsvpFetcher.state}
+          submittingText="Submitting"
+        >
+          Submit
+        </SubmitButton>
+        {rsvp?.id ? (
+          <Button asChild className="w-full sm:w-auto" variant="secondary">
+            <Link to="../">Cancel</Link>
+          </Button>
+        ) : null}
+      </div>
     </rsvpFetcher.Form>
   );
 }
@@ -208,9 +234,73 @@ export function RsvpConfirm({
   };
 }) {
   return (
-    <div>
-      <div>Thank you</div>
-      <div>{rsvp.name}</div>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between text-lg">
+          <span>{rsvp.name}</span>
+          <Badge
+            className={cn(
+              rsvp.response === "YES" && "bg-green-600",
+              rsvp.response === "NO" && "bg-red-600",
+              rsvp.response === "MAYBE" && "bg-yellow-600 text-black"
+            )}
+          >
+            {rsvp.response}
+          </Badge>
+        </CardTitle>
+        <CardDescription>{`${rsvp.guests} ${
+          rsvp.guests === 1 ? "Guest" : "Guests"
+        }`}</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        {rsvp.message ? (
+          <div>
+            <div className="text-xs text-gray-800">Message:</div>
+            <div>{rsvp.message}</div>
+          </div>
+        ) : null}
+        <div>
+          <div className="text-xs text-gray-800">Address:</div>
+          <p>{rsvp.party.location.address1}</p>
+          <p>
+            {rsvp.party.location.city}, {rsvp.party.location.state}{" "}
+            {rsvp.party.location.zip} (
+            <a
+              href={`https://maps.google.com/?${new URLSearchParams([
+                [
+                  "q",
+                  [
+                    rsvp.party.location.address1,
+                    rsvp.party.location.city,
+                    rsvp.party.location.state,
+                    rsvp.party.location.zip
+                  ].join(",")
+                ]
+              ])}`}
+              className="text-blue-600"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Map
+            </a>
+            )
+          </p>
+          <div className="text-xs text-gray-800">Cross Streets:</div>
+          <p>{rsvp.party.location.crossStreets}</p>
+          {rsvp.party.location.instructions ? (
+            <>
+              <div className="text-xs text-gray-800">Instructions:</div>
+              <p>{rsvp.party.location.instructions}</p>
+            </>
+          ) : null}
+        </div>
+        <div className="text-center font-medium">
+          Contact {rsvp.party.host.firstName} with any questions.{" "}
+          <a className="text-blue-600" href={`tel:+${rsvp.party.host.phone}`}>
+            {formatPhoneNumber(rsvp.party.host.phone, "+# (###) ###-####")}
+          </a>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
