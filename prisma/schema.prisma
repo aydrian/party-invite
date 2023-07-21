@@ -48,12 +48,13 @@ model Host {
 }
 
 model Rsvp {
-  id       String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name     String
-  guests   Int          @default(1) @db.Int2
-  message  String?
-  response ResponseType @default(YES)
-  partyId  String       @map("party_id") @db.Uuid
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  guests    Int          @default(1) @db.Int2
+  message   String?
+  response  ResponseType @default(YES)
+  partyId   String       @map("party_id") @db.Uuid
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
 
   party Party @relation(fields: [partyId], references: [id])
 

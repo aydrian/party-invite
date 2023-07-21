@@ -44,11 +44,24 @@ export async function loader({ request }: LoaderArgs) {
     throw new Response("Party not found. ☹️", { status: 404 });
   }
 
-  const rsvpSums = await prisma.rsvp.groupBy({
-    _sum: { guests: true },
-    by: ["response"],
-    where: { partyId: party.id }
-  });
+  const [rsvpSums, messages] = await Promise.all([
+    prisma.rsvp.groupBy({
+      _sum: { guests: true },
+      by: ["response"],
+      where: { partyId: party.id }
+    }),
+    prisma.rsvp.findMany({
+      orderBy: { createdAt: "desc" },
+      select: {
+        guests: true,
+        id: true,
+        message: true,
+        name: true,
+        response: true
+      },
+      where: { AND: [{ partyId: party.id }, { message: { not: null } }] }
+    })
+  ]);
 
   const rsvps = rsvpSums
     .map(({ _sum: { guests }, response }) => ({
@@ -56,7 +69,7 @@ export async function loader({ request }: LoaderArgs) {
     }))
     .reduce((acc, cur) => ({ ...acc, ...cur }), { MAYBE: 0, YES: 0 });
 
-  return json({ party, rsvps });
+  return json({ messages, party, rsvps });
 }
 
 export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
@@ -67,7 +80,8 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
 };
 
 export default function Index() {
-  const { party, rsvps } = useLoaderData<typeof loader>();
+  const { messages, party, rsvps } = useLoaderData<typeof loader>();
+  console.log({ messages });
   const startDate = new Date(party.startDate);
   const endDate = new Date(party.endDate);
   return (
@@ -91,13 +105,28 @@ export default function Index() {
           <dd>{rsvps["MAYBE"]}</dd>
         </dl>
       </header>
-      <main className="container">
-        <Card className="mx-auto max-w-md">
+      <main className="container flex flex-wrap items-center justify-center gap-2">
+        <Card className="mx-auto max-w-md opacity-75 shadow-md">
           <CardHeader>
             <CardTitle>RSVP</CardTitle>
           </CardHeader>
           <CardContent>
             <RsvpForm party={party} />
+          </CardContent>
+        </Card>
+        <Card className="mx-auto max-w-md opacity-75 shadow-md">
+          <CardHeader>
+            <CardTitle>Messages</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul>
+              {messages.map((msg) => (
+                <li key={msg.id}>
+                  <div>{msg.message}</div>
+                  <div>{msg.name}</div>
+                </li>
+              ))}
+            </ul>
           </CardContent>
         </Card>
       </main>

@@ -26,7 +26,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="min-h-screen w-screen bg-gradient-to-t from-orange-400 to-sky-400">
         <Outlet />
         <ScrollRestoration />
         <Scripts />

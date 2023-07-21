@@ -44,8 +44,8 @@ export async function action({ request }: ActionArgs) {
     return json({ status: "idle", submission } as const);
   }
 
-  console.log({ submission });
-  const { guests, message, name, partyId, response } = submission.value;
+  let { guests, message, name, partyId, response } = submission.value;
+  message = message ? message : undefined;
   const rsvp = await prisma.rsvp.create({
     data: {
       guests,
