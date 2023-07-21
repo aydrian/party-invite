@@ -11,7 +11,9 @@ import {
   SubmitButton,
   TextareaField
 } from "~/components/form.tsx";
+import { rsvpCookie } from "~/utils/cookies.server.ts";
 import { prisma } from "~/utils/db.server.ts";
+import { redirectWithConfetti } from "~/utils/flash-session.server.ts";
 
 const RsvpFormSchema = z.object({
   guests: z
@@ -57,22 +59,19 @@ export async function action({ request }: ActionArgs) {
     select: { id: true }
   });
 
-  submission.value.id = rsvp.id;
-  return json({ status: "success", submission } as const);
+  return redirectWithConfetti(`/r/${rsvp.id}`, {
+    headers: { "Set-Cookie": await rsvpCookie.serialize(rsvp.id) }
+  });
 }
 
-export function RsvpForm({
-  party
-}: {
-  party: { endDate: string; id: string; name: string; startDate: string };
-}) {
+export function RsvpForm({ partyId }: { partyId: string }) {
   const rsvpFetcher = useFetcher<typeof action>();
 
   const [form, fields] = useForm({
     constraint: getFieldsetConstraint(RsvpFormSchema),
     defaultValue: {
       guests: "1",
-      partyId: party.id,
+      partyId,
       response: ResponseType.YES
     },
     id: "rsvp-form",
@@ -82,10 +81,6 @@ export function RsvpForm({
     },
     shouldRevalidate: "onBlur"
   });
-
-  if (rsvpFetcher.data?.status === "success") {
-    return <div>Thank you</div>;
-  }
 
   return (
     <rsvpFetcher.Form
@@ -112,7 +107,8 @@ export function RsvpForm({
         }}
         options={[
           { children: "Yes", value: ResponseType.YES },
-          { children: "Maybe", value: ResponseType.MAYBE }
+          { children: "Maybe", value: ResponseType.MAYBE },
+          { children: "No", value: ResponseType.NO }
         ]}
         errors={fields.response.errors}
         layout="horizontal"
@@ -152,5 +148,40 @@ export function RsvpForm({
         Submit
       </SubmitButton>
     </rsvpFetcher.Form>
+  );
+}
+
+export function RsvpConfirm({
+  rsvp
+}: {
+  rsvp: {
+    createdAt: string;
+    guests: number;
+    id: string;
+    message: null | string;
+    name: string;
+    party: {
+      host: {
+        firstName: string;
+        phone: string;
+      };
+      location: {
+        address1: string;
+        city: string;
+        crossStreets: string;
+        instructions: null | string;
+        name: string;
+        state: string;
+        zip: string;
+      };
+    };
+    response: ResponseType;
+  };
+}) {
+  return (
+    <div>
+      <div>Thank you</div>
+      <div>{rsvp.name}</div>
+    </div>
   );
 }

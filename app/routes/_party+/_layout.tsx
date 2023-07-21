@@ -4,7 +4,7 @@ import {
   type V2_MetaFunction,
   json
 } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { Outlet, useLoaderData, useOutletContext } from "@remix-run/react";
 
 import {
   Card,
@@ -15,7 +15,9 @@ import {
 import { prisma } from "~/utils/db.server.ts";
 import env from "~/utils/env.server.ts";
 
-import { RsvpForm } from "./resources+/rsvp.tsx";
+export type OutletContext = {
+  partyId: string;
+};
 
 export async function loader({ request }: LoaderArgs) {
   const party = await prisma.party.findUnique({
@@ -67,7 +69,7 @@ export async function loader({ request }: LoaderArgs) {
     .map(({ _sum: { guests }, response }) => ({
       [response]: guests
     }))
-    .reduce((acc, cur) => ({ ...acc, ...cur }), { MAYBE: 0, YES: 0 });
+    .reduce((acc, cur) => ({ ...acc, ...cur }), { MAYBE: 0, NO: 0, YES: 0 });
 
   return json({ messages, party, rsvps });
 }
@@ -79,16 +81,17 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
   ];
 };
 
-export default function Index() {
+export default function Layout() {
   const { messages, party, rsvps } = useLoaderData<typeof loader>();
-  console.log({ messages });
   const startDate = new Date(party.startDate);
   const endDate = new Date(party.endDate);
   return (
     <div>
-      <header className="container">
-        <h1>You're invited to {party.name}</h1>
-        <h2>
+      <header className="container p-4">
+        <h1 className="text-center text-3xl font-bold leading-tight text-gray-900">
+          {party.name}
+        </h1>
+        <h2 className="text-center text-2xl font-semibold leading-tight text-gray-700">
           {new Intl.DateTimeFormat(undefined, {
             day: "numeric",
             hour: "numeric",
@@ -98,23 +101,24 @@ export default function Index() {
             year: "numeric"
           }).formatRange(startDate, endDate)}
         </h2>
-        <dl>
-          <dt>Yeses</dt>
-          <dd>{rsvps["YES"]}</dd>
-          <dt>Maybes</dt>
-          <dd>{rsvps["MAYBE"]}</dd>
+        <dl className="flex w-full justify-center gap-4">
+          <div className="text-center">
+            <dt className="font-medium">Yes's</dt>
+            <dd className="font-light">{rsvps["YES"]}</dd>
+          </div>
+          <div className="text-center">
+            <dt className="font-medium">Maybes</dt>
+            <dd className="font-light">{rsvps["MAYBE"]}</dd>
+          </div>
+          <div className="text-center">
+            <dt className="font-medium">No's</dt>
+            <dd className="font-light">{rsvps["NO"]}</dd>
+          </div>
         </dl>
       </header>
-      <main className="container flex flex-wrap items-center justify-center gap-2">
-        <Card className="mx-auto max-w-md opacity-75 shadow-md">
-          <CardHeader>
-            <CardTitle>RSVP</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RsvpForm party={party} />
-          </CardContent>
-        </Card>
-        <Card className="mx-auto max-w-md opacity-75 shadow-md">
+      <main className="container flex flex-col items-center justify-center gap-4">
+        <Outlet context={{ partyId: party.id }} />
+        <Card className="w-full max-w-md grow opacity-75 shadow-md">
           <CardHeader>
             <CardTitle>Messages</CardTitle>
           </CardHeader>
@@ -132,4 +136,8 @@ export default function Index() {
       </main>
     </div>
   );
+}
+
+export function useParty() {
+  return useOutletContext<OutletContext>();
 }
