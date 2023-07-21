@@ -46,17 +46,26 @@ export async function action({ request }: ActionArgs) {
     return json({ status: "idle", submission } as const);
   }
 
-  let { guests, message, name, partyId, response } = submission.value;
+  let { guests, id, message, name, partyId, response } = submission.value;
   message = message ? message : undefined;
-  const rsvp = await prisma.rsvp.create({
-    data: {
+
+  const rsvp = await prisma.rsvp.upsert({
+    create: {
       guests,
       message,
       name,
       partyId,
       response
     },
-    select: { id: true }
+    select: { id: true },
+    update: {
+      guests,
+      message,
+      name,
+      partyId,
+      response
+    },
+    where: { id }
   });
 
   return redirectWithConfetti(`/r/${rsvp.id}`, {
@@ -64,15 +73,30 @@ export async function action({ request }: ActionArgs) {
   });
 }
 
-export function RsvpForm({ partyId }: { partyId: string }) {
+export function RsvpForm({
+  partyId,
+  rsvp
+}: {
+  partyId: string;
+  rsvp?: {
+    guests: number;
+    id: string;
+    message: null | string;
+    name: string;
+    response: ResponseType;
+  };
+}) {
   const rsvpFetcher = useFetcher<typeof action>();
 
   const [form, fields] = useForm({
     constraint: getFieldsetConstraint(RsvpFormSchema),
     defaultValue: {
-      guests: "1",
+      guests: rsvp?.guests ?? "1",
+      id: rsvp?.id,
+      message: rsvp?.message,
+      name: rsvp?.name,
       partyId,
-      response: ResponseType.YES
+      response: rsvp?.response ?? ResponseType.YES
     },
     id: "rsvp-form",
     lastSubmission: rsvpFetcher.data?.submission,
@@ -93,6 +117,11 @@ export function RsvpForm({ partyId }: { partyId: string }) {
         name={fields.partyId.name}
         type="hidden"
         value={fields.partyId.defaultValue}
+      />
+      <input
+        name={fields.id.name}
+        type="hidden"
+        value={fields.id.defaultValue}
       />
       <RadioGroupField
         inputProps={{

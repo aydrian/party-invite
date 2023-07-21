@@ -86,7 +86,7 @@ export default function Layout() {
   const startDate = new Date(party.startDate);
   const endDate = new Date(party.endDate);
   return (
-    <div>
+    <div className="pb-4">
       <header className="container p-4">
         <h1 className="text-center text-3xl font-bold leading-tight text-gray-900">
           {party.name}
