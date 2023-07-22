@@ -24,9 +24,15 @@ export async function loader({ request }: DataFunctionArgs) {
 }
 
 export const links: LinksFunction = () => [
-  ...(cssBundleHref ? [{ href: cssBundleHref, rel: "stylesheet" }] : []),
+  // Preload CSS as a resource to avoid render blocking
+  { as: "style", href: "/fonts/anton/font.css", rel: "preload" },
+  { as: "style", href: "/fonts/permanant-marker/font.css", rel: "preload" },
+  ...(cssBundleHref
+    ? [{ as: "style", href: cssBundleHref, rel: "preload" }]
+    : []),
   { href: "/fonts/anton/font.css", rel: "stylesheet" },
   { href: "/fonts/permanant-marker/font.css", rel: "stylesheet" },
+  ...(cssBundleHref ? [{ href: cssBundleHref, rel: "stylesheet" }] : []),
   { href: styles, rel: "stylesheet" }
 ];
 

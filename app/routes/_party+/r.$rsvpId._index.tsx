@@ -2,13 +2,7 @@ import { type DataFunctionArgs, json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 
 import { Button } from "~/components/ui/button.tsx";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle
-} from "~/components/ui/card.tsx";
+import { CardContent, CardFooter } from "~/components/ui/card.tsx";
 import { rsvpCookie } from "~/utils/cookies.server.ts";
 import { prisma } from "~/utils/db.server.ts";
 
@@ -58,23 +52,16 @@ export default function RRsvpId() {
   const { hasCookie, rsvp } = useLoaderData<typeof loader>();
   return (
     <>
-      <Card className="w-full max-w-md opacity-75 shadow-md md:min-w-[28rem]">
-        <CardHeader>
-          <CardTitle className="font-anton font-black italic leading-tight">
-            RSVP
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <RsvpConfirm rsvp={rsvp} />
-        </CardContent>
-        {hasCookie ? (
-          <CardFooter>
-            <Button asChild size="sm">
-              <Link to="./edit">Edit</Link>
-            </Button>
-          </CardFooter>
-        ) : null}
-      </Card>
+      <CardContent>
+        <RsvpConfirm rsvp={rsvp} />
+      </CardContent>
+      {hasCookie ? (
+        <CardFooter>
+          <Button asChild size="sm">
+            <Link to="./edit">Edit</Link>
+          </Button>
+        </CardFooter>
+      ) : null}
     </>
   );
 }

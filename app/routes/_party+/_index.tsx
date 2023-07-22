@@ -1,11 +1,6 @@
 import { type DataFunctionArgs, redirect } from "@remix-run/node";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle
-} from "~/components/ui/card.tsx";
+import { CardContent } from "~/components/ui/card.tsx";
 import { RsvpForm } from "~/routes/resources+/rsvp.tsx";
 import { rsvpCookie } from "~/utils/cookies.server.ts";
 
@@ -22,15 +17,8 @@ export async function loader({ request }: DataFunctionArgs) {
 export default function Index() {
   const { partyId } = useParty();
   return (
-    <Card className="w-full max-w-md opacity-75 shadow-md md:min-w-[28rem]">
-      <CardHeader>
-        <CardTitle className="font-anton font-black italic leading-tight">
-          RSVP
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <RsvpForm partyId={partyId} />
-      </CardContent>
-    </Card>
+    <CardContent>
+      <RsvpForm partyId={partyId} />
+    </CardContent>
   );
 }

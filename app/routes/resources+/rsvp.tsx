@@ -130,6 +130,7 @@ export function RsvpForm({
       action="/resources/rsvp"
       className="flex flex-col"
       method="post"
+      preventScrollReset
       {...form.props}
     >
       <input

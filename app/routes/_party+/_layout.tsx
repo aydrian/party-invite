@@ -88,11 +88,11 @@ export default function Layout() {
   const startDate = new Date(party.startDate);
   const endDate = new Date(party.endDate);
   return (
-    <div className="pb-8">
-      <header className="container p-4">
-        <div className="mx-auto mb-4 flex w-5/6 max-w-sm flex-col justify-between gap-4 rounded-sm bg-white p-4 shadow-md">
+    <div className="container flex max-w-max flex-col gap-8 py-8 md:flex-row md:justify-center md:py-0">
+      <header className="mx-auto flex max-w-max flex-col items-center gap-4 md:justify-center md:py-8">
+        <div className="mx-auto flex w-5/6 max-w-sm flex-col justify-between gap-4 rounded-sm bg-white p-4 shadow-md">
           <div className=" relative flex aspect-square w-full items-end justify-center bg-black">
-            <p className="p-4 text-center font-anton font-black italic leading-tight text-white">
+            <p className="p-4 text-center font-anton font-bold italic leading-tight text-white">
               I don't know about you,
               <br />
               but I'm feeling 42
@@ -103,28 +103,37 @@ export default function Layout() {
             <div>1981</div>
           </div>
         </div>
-        <h1 className="text-center font-anton text-3xl font-black italic leading-tight text-gray-900">
-          {party.name}
-        </h1>
-        <h2 className="text-center font-anton text-xl font-black leading-tight text-gray-800">
-          {new Intl.DateTimeFormat(undefined, {
-            day: "numeric",
-            hour: "numeric",
-            minute: "numeric",
-            month: "short",
-            weekday: "short",
-            year: "numeric"
-          }).formatRange(startDate, endDate)}
-        </h2>
-        <h3 className="text-center font-anton text-lg font-black leading-tight text-gray-700">
-          @ {party.location.name}
-        </h3>
+        <div>
+          <h1 className="text-center font-anton text-3xl font-bold italic leading-tight text-gray-900">
+            {party.name}
+          </h1>
+          <h2 className="text-center font-anton text-xl font-semibold leading-tight text-gray-800">
+            {new Intl.DateTimeFormat(undefined, {
+              day: "numeric",
+              hour: "numeric",
+              minute: "numeric",
+              month: "short",
+              weekday: "short",
+              year: "numeric"
+            }).formatRange(startDate, endDate)}
+          </h2>
+          <h3 className="text-center font-anton text-lg font-semibold leading-tight text-gray-700">
+            @ {party.location.name}
+          </h3>
+        </div>
       </header>
-      <main className="container flex flex-col items-center justify-center gap-4">
-        <Outlet context={{ partyId: party.id }} />
+      <main className="mx-auto flex min-w-fit max-w-max grow flex-col items-center gap-8 md:max-h-screen md:overflow-scroll md:px-4 md:py-8">
+        <Card className="w-full max-w-md opacity-75 shadow-md md:min-w-[28rem]">
+          <CardHeader>
+            <CardTitle className="font-anton font-bold italic leading-tight">
+              RSVP
+            </CardTitle>
+          </CardHeader>
+          <Outlet context={{ partyId: party.id }} />
+        </Card>
         <Card className="w-full max-w-md grow opacity-75 shadow-md">
           <CardHeader>
-            <CardTitle className="font-anton font-black italic leading-tight">
+            <CardTitle className="font-anton font-bold italic leading-tight">
               Who's Attending?
             </CardTitle>
           </CardHeader>
@@ -159,7 +168,7 @@ export default function Layout() {
                         msg.response === "MAYBE" && "bg-yellow-600 text-black"
                       )}
                     >
-                      {msg.response}
+                      {msg.response} ({msg.guests})
                     </Badge>
                   </div>
                 </li>
