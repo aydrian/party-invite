@@ -24,6 +24,7 @@ export type OutletContext = {
 export async function loader({ request }: LoaderArgs) {
   const party = await prisma.party.findUnique({
     select: {
+      description: true,
       endDate: true,
       host: { select: { firstName: true, phone: true } },
       id: true,
@@ -123,6 +124,7 @@ export default function Layout() {
           <h3 className="text-center font-anton text-lg font-semibold leading-tight text-gray-700">
             @ {party.location.name}
           </h3>
+          <p className="p-2 text-center">{party.description}</p>
         </div>
       </header>
       <main className="mx-auto flex min-w-fit max-w-max grow flex-col items-center gap-8 md:max-h-screen md:overflow-scroll md:px-4 md:py-8">
