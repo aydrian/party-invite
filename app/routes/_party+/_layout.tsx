@@ -79,7 +79,8 @@ export async function loader({ request }: LoaderArgs) {
 export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
   return [
     { title: `You're invited to ${data?.party.name}` },
-    { content: `An invitation to ${data?.party.name}`, name: "description" }
+    // { content: `You're invited to ${data?.party.name}`, name: "description" },
+    { "og:image": "https://invite.itsaydrian.com/social-preview.png" }
   ];
 };
 
@@ -91,8 +92,8 @@ export default function Layout() {
     <div className="container flex max-w-max flex-col gap-8 py-8 md:flex-row md:justify-center md:py-0">
       <header className="mx-auto flex max-w-max flex-col items-center gap-4 md:justify-center md:py-8">
         <div className="mx-auto flex w-5/6 max-w-sm flex-col justify-between gap-4 rounded-sm bg-white p-4 shadow-md">
-          <div className=" relative flex aspect-square w-full items-end justify-center bg-black">
-            <p className="p-4 text-center font-anton font-bold italic leading-tight text-white">
+          <div className=" relative flex aspect-square w-full items-end justify-center bg-black bg-[url('/polaroid.webp')] bg-cover bg-center">
+            <p className="p-4 text-center font-anton text-xl font-bold italic leading-tight text-[#b11a46] md:text-2xl">
               I don't know about you,
               <br />
               but I'm feeling 42
