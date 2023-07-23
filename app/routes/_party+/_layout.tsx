@@ -101,7 +101,7 @@ export default function Layout() {
             <div>1981</div>
           </div>
         </div>
-        <p className="py-2 text-center font-anton text-3xl font-bold italic leading-tight text-[#b11a46]">
+        <p className="min-w-max py-2 text-center font-anton text-3xl font-bold italic leading-tight text-[#b11a46]">
           I don't know about you,
           <br />
           but I'm feeling 42.
