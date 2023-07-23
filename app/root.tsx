@@ -2,6 +2,7 @@ import { cssBundleHref } from "@remix-run/css-bundle";
 import {
   type DataFunctionArgs,
   type LinksFunction,
+  type V2_MetaFunction,
   json
 } from "@remix-run/node";
 import {
@@ -22,6 +23,10 @@ export async function loader({ request }: DataFunctionArgs) {
   const { flash, headers: flashHeaders } = await getFlashSession(request);
   return json({ flash }, { headers: flashHeaders });
 }
+
+export const meta: V2_MetaFunction<typeof loader> = () => {
+  return [{ "og:image": "https://invite.itsaydrian.com/social-preview.png" }];
+};
 
 export const links: LinksFunction = () => [
   // Preload CSS as a resource to avoid render blocking
