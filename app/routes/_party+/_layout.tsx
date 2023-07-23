@@ -80,7 +80,7 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
   return [
     { title: `You're invited to ${data?.party.name}` },
     // { content: `You're invited to ${data?.party.name}`, name: "description" },
-    { "og:image": "https://invite.itsaydrian.com/social-preview.png" }
+    { "og:image": "https://party.itsaydrian.com/social-preview.png" }
   ];
 };
 
