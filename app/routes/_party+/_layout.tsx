@@ -95,18 +95,17 @@ export default function Layout() {
     <div className="container flex max-w-max flex-col gap-8 py-8 md:flex-row md:justify-center md:py-0">
       <header className="mx-auto flex max-w-max flex-col items-center gap-4 md:justify-center md:py-8">
         <div className="mx-auto flex w-5/6 max-w-sm flex-col justify-between gap-4 rounded-sm bg-white p-4 shadow-md">
-          <div className=" relative flex aspect-square w-full items-end justify-center bg-black bg-[url('/polaroid.webp')] bg-cover bg-center">
-            <p className="p-4 text-center font-anton text-xl font-bold italic leading-tight text-[#b11a46] md:text-2xl">
-              I don't know about you,
-              <br />
-              but I'm feeling 42
-            </p>
-          </div>
+          <div className=" relative flex aspect-square w-full items-end justify-center bg-black bg-[url('/polaroid.webp')] bg-cover bg-center"></div>
           <div className="flex items-center justify-between px-4 font-permanant-marker text-3xl leading-tight">
             <div>A.H.</div>
             <div>1981</div>
           </div>
         </div>
+        <p className="py-2 text-center font-anton text-3xl font-bold italic leading-tight text-[#b11a46]">
+          I don't know about you,
+          <br />
+          but I'm feeling 42.
+        </p>
         <div>
           <h1 className="text-center font-anton text-3xl font-bold italic leading-tight text-gray-900">
             {party.name}
