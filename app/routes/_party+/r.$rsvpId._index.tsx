@@ -19,6 +19,7 @@ export async function loader({ params, request }: DataFunctionArgs) {
       name: true,
       party: {
         select: {
+          endDate: true,
           host: { select: { firstName: true, phone: true } },
           location: {
             select: {
@@ -30,7 +31,9 @@ export async function loader({ params, request }: DataFunctionArgs) {
               state: true,
               zip: true
             }
-          }
+          },
+          name: true,
+          startDate: true
         }
       },
       response: true

@@ -3,6 +3,9 @@ import { getFieldsetConstraint, parse } from "@conform-to/zod";
 import { ResponseType } from "@prisma/client";
 import { type ActionArgs, json, redirect } from "@remix-run/node";
 import { Link, useFetcher } from "@remix-run/react";
+// @ts-ignore
+import { AddToCalendarButton } from "add-to-calendar-button-react";
+import { format } from "date-fns";
 import { z } from "zod";
 
 import {
@@ -217,6 +220,7 @@ export function RsvpConfirm({
     message: null | string;
     name: string;
     party: {
+      endDate: string;
       host: {
         firstName: string;
         phone: string;
@@ -230,10 +234,14 @@ export function RsvpConfirm({
         state: string;
         zip: string;
       };
+      name: string;
+      startDate: string;
     };
     response: ResponseType;
   };
 }) {
+  const startDate = new Date(rsvp.party.startDate);
+  const endDate = new Date(rsvp.party.endDate);
   return (
     <Card>
       <CardHeader>
@@ -301,6 +309,26 @@ export function RsvpConfirm({
             {formatPhoneNumber(rsvp.party.host.phone, "+# (###) ###-####")}
           </a>
         </div>
+        <AddToCalendarButton
+          description={`Cross Streets:  ${
+            rsvp.party.location.crossStreets
+          }[br]Instructions:  ${
+            rsvp.party.location.instructions
+          }[br][br]Contact ${
+            rsvp.party.host.firstName
+          } with any questions: ${formatPhoneNumber(
+            rsvp.party.host.phone,
+            "+# (###) ###-####"
+          )}`}
+          endDate={format(endDate, "yyyy-MM-dd")}
+          endTime={format(endDate, "HH:mm")}
+          location={`${rsvp.party.location.name} ${rsvp.party.location.address1} ${rsvp.party.location.city}, ${rsvp.party.location.state}  ${rsvp.party.location.zip}`}
+          name={rsvp.party.name}
+          options={["Apple", "Google"]}
+          startDate={format(startDate, "yyyy-MM-dd")}
+          startTime={format(startDate, "HH:mm")}
+          timeZone="currentBrowser"
+        ></AddToCalendarButton>
       </CardContent>
     </Card>
   );
